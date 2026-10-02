@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đuổi Hình Bắt Chữ - Khám Phá Đại Dương</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0077be;
+            --primary-dark: #004b76;
+            --secondary: #00b4d8;
+            --accent: #ff9e00;
+            --accent-hover: #e08b00;
+            --success: #2ec4b6;
+            --danger: #e63946;
+            --bg-light: #e0f7fa;
+            --text-dark: #023e8a;
+            --card-bg: rgba(255, 255, 255, 0.92);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: linear-gradient(180deg, #0096c7 0%, #03045e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            color: var(--text-dark);
+            padding: 12px;
+        }
+
+        /* --- Dynamic Ocean Background & Bubbles --- */
+        .bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: rise 10s infinite ease-in;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -50px;
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(100px);
+            }
+            100% {
+                bottom: 108vh;
+                transform: translateX(-50px);
+            }
+        }
+
+        /* Ambient sea life */
+        .sea-creature {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.35;
+            z-index: 1;
+            pointer-events: none;
+            animation: floatLeftRight 18s infinite linear;
+        }
+
+        @keyframes floatLeftRight {
+            0% { left: -10%; transform: scaleX(1); }
+            49% { left: 110%; transform: scaleX(1); }
+            50% { left: 110%; transform: scaleX(-1); }
+            100% { left: -10%; transform: scaleX(-1); }
+        }
+
+        /* Container Card */
+        .game-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border: 4px solid #90e0ef;
+            transition: all 0.3s ease;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header Navigation */
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .btn-home {
+            background: #caf0f8;
+            color: #03045e;
+            border: 2px solid #00b4d8;
+            border-radius: 16px;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-home:hover {
+            background: #90e0ef;
+            transform: translateY(-2px);
+        }
+
+        .btn-home:active {
+            transform: translateY(0);
+        }
+
+        /* Logo & Titles */
+        .logo-box {
+            position: relative;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon {
+            font-size: 4.8rem;
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2));
+            animation: bounce 3s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .main-title {
+            color: #0077be;
+            font-size: 2.1rem;
+            font-weight: 900;
+            text-shadow: 2px 2px 0px #caf0f8, 4px 4px 0px rgba(0,0,0,0.1);
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .sub-title {
+            color: #03045e;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #0077be, #00b4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            font-size: 1.05rem;
+            color: #023e8a;
+            margin-bottom: 24px;
+            font-weight: 600;
+            padding: 0 12px;
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9e00 0%, #ff6d00 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 36px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 110, 0, 0.4), inset 0 2px 0 rgba(255,255,255,0.4);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(255, 110, 0, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        /* Progress & Score Bar */
+        .status-card {
+            background: #caf0f8;
+            width: 100%;
+            border-radius: 18px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 2px solid #90e0ef;
+        }
+
+        .status-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #03045e;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #bde0fe;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 5%;
+            background: linear-gradient(90deg, #00b4d8, #0077be);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Box */
+        .question-box {
+            background: #ffffff;
+            width: 100%;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            border: 2px dashed #00b4d8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .emoji-clue {
+            font-size: 4rem;
+            margin: 10px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+        }
+
+        /* Answer Slots */
+        .answer-slots {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 16px 0;
+            min-height: 54px;
+            width: 100%;
+        }
+
+        .slot {
+            width: 44px;
+            height: 52px;
+            border-radius: 12px;
+            border: 3px solid #0077be;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #03045e;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .slot.filled {
+            background: #e0f7fa;
+            border-color: #00b4d8;
+            animation: popIn 0.2s ease-out;
+        }
+
+        .slot.space {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            width: 20px;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); }
+            100% { transform: scale(1); }
+        }
+
+        /* Letters Keyboard Grid */
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            width: 100%;
+        }
+
+        .key-btn {
+            width: 46px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #e9ecef 100%);
+            border: 2px solid #adb5bd;
+            border-bottom: 4px solid #6c757d;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #03045e;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .key-btn:hover:not(:disabled) {
+            background: #caf0f8;
+            border-color: #00b4d8;
+            transform: translateY(-2px);
+        }
+
+        .key-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        .key-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            border-bottom-width: 2px;
+            transform: scale(0.95);
+        }
+
+        /* Control Action Buttons */
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-delete {
+            background: #ff4d6d;
+            color: white;
+            border-bottom: 4px solid #c9184a;
+        }
+
+        .btn-delete:hover:not(:disabled) { background: #ff758f; }
+
+        .btn-check {
+            background: #38b000;
+            color: white;
+            border-bottom: 4px solid #007200;
+        }
+
+        .btn-check:hover:not(:disabled) { background: #70e000; }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-bottom-width: 2px;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #0077be 0%, #00b4d8 100%);
+            color: white;
+            border-bottom: 4px solid #004b76;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        /* Feedback Msg Area */
+        .feedback-box {
+            min-height: 48px;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-box.correct {
+            background: #d8f3dc;
+            color: #1b4332;
+            border: 2px solid #52b788;
+        }
+
+        .feedback-box.wrong {
+            background: #ffccd5;
+            color: #590d22;
+            border: 2px solid #ff4d6d;
+        }
+
+        .feedback-box.warning {
+            background: #fff3bf;
+            color: #7f5f00;
+            border: 2px solid #ffd43b;
+        }
+
+        /* Results Screen Stats */
+        .result-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            margin: 16px 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 2px solid #caf0f8;
+        }
+
+        .final-score {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #0077be;
+            margin: 10px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            padding: 12px;
+            border-radius: 14px;
+            font-weight: 800;
+        }
+
+        .stat-correct { background: #d8f3dc; color: #1b4332; }
+        .stat-wrong { background: #ffccd5; color: #590d22; }
+
+        .eval-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #03045e;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .results-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* --- Responsive Tweaks --- */
+        @media (max-width: 520px) {
+            .game-container { padding: 16px; border-radius: 20px; }
+            .main-title { font-size: 1.6rem; }
+            .sub-title { font-size: 1.1rem; }
+            .emoji-clue { font-size: 3.2rem; min-height: 60px; }
+            .slot { width: 34px; height: 42px; font-size: 1.2rem; border-radius: 8px; }
+            .slot.space { width: 12px; }
+            .key-btn { width: 38px; height: 42px; font-size: 1.05rem; border-radius: 8px; }
+            .keyboard { gap: 5px; }
+            .btn-action { padding: 10px 12px; font-size: 0.95rem; }
+            .logo-icon { font-size: 3.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Bubbles Background -->
+    <div class="bubbles" id="bubblesContainer"></div>
+
+    <!-- Ambient Sea Creatures -->
+    <div class="sea-creature" style="top: 15%; animation-duration: 22s;">🐟</div>
+    <div class="sea-creature" style="top: 45%; animation-duration: 28s; animation-delay: -5s;">🐬</div>
+    <div class="sea-creature" style="top: 75%; animation-duration: 18s; animation-delay: -10s;">🐢</div>
+
+    <!-- Main Container -->
+    <div class="game-container">
+        
+        <!-- ================= 1. TRANG CHỦ ================= -->
+        <div id="startScreen" class="screen active">
+            <div class="logo-box">
+                <span class="logo-icon">🐳🏫</span>
+            </div>
+            <h1 class="main-title">ĐUỔI HÌNH BẮT CHỮ</h1>
+            <h2 class="sub-title">KHÁM PHÁ ĐẠI DƯƠNG</h2>
+            <p class="description">
+                Hãy quan sát các biểu tượng gợi ý, nhanh mắt chọn chữ cái phù hợp và khám phá các bí ẩn dưới lòng đại dương bao la!
+            </p>
+            <button class="btn-primary" onclick="startGame()">
+                🌊 BẮT ĐẦU CHƠI 🌊
+            </button>
+        </div>
+
+        <!-- ================= 2. MÀN HÌNH CHƠI GAME ================= -->
+        <div id="gameScreen" class="screen">
+            <!-- Navigation Header -->
+            <div class="top-bar">
+                <button class="btn-home" onclick="confirmGoHome()">
+                    <i class="fa-solid fa-house"></i> TRANG CHỦ
+                </button>
+            </div>
+
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="status-info">
+                    <span id="questionNumText">Câu 1/20</span>
+                    <span id="scoreText">Điểm: 0 / 50</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Question & Clue Area -->
+            <div class="question-box">
+                <div class="emoji-clue" id="emojiClue">🐟 + 🌊</div>
+                
+                <!-- Answer Display Slots -->
+                <div class="answer-slots" id="answerSlots"></div>
+            </div>
+
+            <!-- Feedback Message -->
+            <div class="feedback-box" id="feedbackBox" style="visibility: hidden;">
+                &nbsp;
+            </div>
+
+            <!-- Keyboard Area -->
+            <div class="keyboard" id="keyboard"></div>
+
+            <!-- Controls (Delete & Check) -->
+            <div class="controls-row">
+                <button class="btn-action btn-delete" id="btnDelete" onclick="deleteLastLetter()">
+                    <i class="fa-solid fa-delete-left"></i> XÓA
+                </button>
+                <button class="btn-action btn-check" id="btnCheck" onclick="checkAnswer()">
+                    <i class="fa-solid fa-circle-check"></i> KIỂM TRA
+                </button>
+            </div>
+
+            <!-- Next Button (Hidden by default) -->
+            <button class="btn-action btn-next" id="btnNext" onclick="nextQuestion()" style="display: none;">
+                CÂU TIẾP THEO <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- ================= 3. TRANG KẾT QUẢ ================= -->
+        <div id="resultScreen" class="screen">
+            <h1 class="main-title" style="margin-top: 10px;">🏆 HOÀN THÀNH! 🏆</h1>
+            
+            <div class="result-card">
+                <p style="font-size: 1.1rem; font-weight: 700; color: #023e8a;">Bạn đã xuất sắc hoàn thành 20 câu hỏi!</p>
+                
+                <div class="final-score" id="finalScoreText">0 / 50</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item stat-correct" id="statCorrectText">
+                        ✅ Đúng: 0 câu
+                    </div>
+                    <div class="stat-item stat-wrong" id="statWrongText">
+                        ❌ Sai: 0 câu
+                    </div>
+                </div>
+
+                <div class="eval-text" id="evalText">
+                    🌟 Xuất sắc! Bạn là nhà khám phá đại dương!
+                </div>
+            </div>
+
+            <div class="results-buttons">
+                <button class="btn-primary" onclick="startGame()">
+                    <i class="fa-solid fa-rotate-right"></i> CHƠI LẠI
+                </button>
+                <button class="btn-home" onclick="goHome()" style="justify-content: center; padding: 14px; font-size: 1.1rem;">
+                    <i class="fa-solid fa-house"></i> VỀ TRANG CHỦ
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 20 EXACT QUESTIONS DATASET
+        const QUESTIONS_DATA = [
+            { id: 1,  clue: "🐟 + 🌊", answer: "CÁ BIỂN" },
+            { id: 2,  clue: "🐳 + 💦", answer: "CÁ VOI" },
+            { id: 3,  clue: "🦈 + 🌊", answer: "CÁ MẬP" },
+            { id: 4,  clue: "🐙 + 🌊", answer: "BẠCH TUỘC" },
+            { id: 5,  clue: "🐬 + 🌊", answer: "CÁ HEO" },
+            { id: 6,  clue: "🐢 + 🌊", answer: "RÙA BIỂN" },
+            { id: 7,  clue: "🪼 + 🌊", answer: "SỨA BIỂN" },
+            { id: 8,  clue: "🦀 + 🏖️", answer: "CUA BIỂN" },
+            { id: 9,  clue: "⭐ + 🌊", answer: "SAO BIỂN" },
+            { id: 10, clue: "🐚 + 👂", answer: "ỐC TAI" },
+            { id: 11, clue: "🏝️ + 🌊", answer: "ĐẢO BIỂN" },
+            { id: 12, clue: "🚢 + 🌊", answer: "TÀU BIỂN" },
+            { id: 13, clue: "🏖️ + ☀️", answer: "BÃI BIỂN" },
+            { id: 14, clue: "🌊 + 🌊 + 🌊", answer: "SÓNG BIỂN" },
+            { id: 15, clue: "🪸 + 🌊", answer: "SAN HÔ" },
+            { id: 16, clue: "⚓ + 🚢", answer: "NEO BIỂN" },
+            { id: 17, clue: "🌊 + 👀", answer: "MẮT BIỂN" },
+            { id: 18, clue: "🐋 + 🎵", answer: "TIẾNG CÁ VOI" },
+            { id: 19, clue: "🏴‍☠️ + 🚢 + 💰", answer: "KHO BÁU BIỂN" },
+            { id: 20, clue: "🌊 + 🌍", answer: "ĐẠI DƯƠNG" }
+        ];
+
+        // Extra noise Vietnamese letters for scrambling
+        const NOISE_LETTERS = ["A", "Ă", "Â", "B", "C", "D", "Đ", "E", "Ê", "G", "H", "I", "K", "L", "M", "N", "O", "Ô", "Ơ", "P", "Q", "R", "S", "T", "U", "Ư", "V", "X", "Y"];
+
+        // Game State Engine
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let userSelectedLetters = []; // Stores objects: { char, keyIndex }
+        let currentKeyboardKeys = [];
+        let isQuestionChecked = false;
+
+        // Generate Bubbles on Load
+        function createBubbles() {
+            const container = document.getElementById('bubblesContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 25 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 6 + 6}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(bubble);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function resetGameState() {
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            userSelectedLetters = [];
+            isQuestionChecked = false;
+        }
+
+        function startGame() {
+            resetGameState();
+            showScreen('gameScreen');
+            loadQuestion();
+        }
+
+        function confirmGoHome() {
+            // Immediately resets game progress & goes to main screen
+            resetGameState();
+            showScreen('startScreen');
+        }
+
+        function goHome() {
+            resetGameState();
+            showScreen('startScreen');
+        }
+
+        function loadQuestion() {
+            isQuestionChecked = false;
+            userSelectedLetters = [];
+            
+            const currentQ = QUESTIONS_DATA[currentQuestionIndex];
+
+            // Update UI Top Bar
+            document.getElementById('questionNumText').innerText = `Câu ${currentQuestionIndex + 1}/20`;
+            document.getElementById('scoreText').innerText = `Điểm: ${score} / 50`;
+            const progressPercent = ((currentQuestionIndex + 1) / 20) * 100;
+            document.getElementById('progressBarFill').style.width = `${progressPercent}%`;
+
+            // Reset Feedback & Buttons
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackBox.style.visibility = 'hidden';
+            feedbackBox.className = 'feedback-box';
+            feedbackBox.innerHTML = '&nbsp;';
+
+            document.getElementById('btnCheck').disabled = false;
+            document.getElementById('btnDelete').disabled = false;
+            document.getElementById('btnNext').style.display = 'none';
+
+            // Clue Emoji
+            document.getElementById('emojiClue').innerText = currentQ.clue;
+
+            // Render Answer Slots
+            renderAnswerSlots(currentQ.answer);
+
+            // Generate & Render Keyboard Keys
+            generateKeyboard(currentQ.answer);
+        }
+
+        function renderAnswerSlots(answerStr) {
+            const container = document.getElementById('answerSlots');
+            container.innerHTML = '';
+
+            for (let i = 0; i < answerStr.length; i++) {
+                const char = answerStr[i];
+                const slot = document.createElement('div');
+                if (char === ' ') {
+                    slot.className = 'slot space';
+                } else {
+                    slot.className = 'slot';
+                    slot.dataset.index = i;
+                }
+                container.appendChild(slot);
+            }
+        }
+
+        function generateKeyboard(answerStr) {
+            const container = document.getElementById('keyboard');
+            container.innerHTML = '';
+
+            // Extract all non-space characters from answer
+            const answerChars = answerStr.replace(/\s+/g, '').split('');
+            
+            // Add noise characters to make total keyboard size around 12-14 keys
+            const keysPool = [...answerChars];
+            const targetTotalKeys = Math.max(12, answerChars.length + 4);
+
+            while (keysPool.length < targetTotalKeys) {
+                const randomNoise = NOISE_LETTERS[Math.floor(Math.random() * NOISE_LETTERS.length)];
+                keysPool.push(randomNoise);
+            }
+
+            // Shuffle keys pool (Fisher-Yates shuffle)
+            for (let i = keysPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [keysPool[i], keysPool[j]] = [keysPool[j], keysPool[i]];
+            }
+
+            currentKeyboardKeys = keysPool;
+
+            // Render Key Buttons
+            keysPool.forEach((char, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'key-btn';
+                btn.innerText = char;
+                btn.id = `key-btn-${index}`;
+                btn.onclick = () => selectLetter(char, index);
+                container.appendChild(btn);
+            });
+        }
+
+        function getRequiredLetterCount() {
+            const currentQ = QUESTIONS_DATA[currentQuestionIndex];
+            return currentQ.answer.replace(/\s+/g, '').length;
+        }
+
+        function selectLetter(char, keyIndex) {
+            if (isQuestionChecked) return;
+
+            const reqCount = getRequiredLetterCount();
+            if (userSelectedLetters.length >= reqCount) return;
+
+            // Record selection
+            userSelectedLetters.push({ char, keyIndex });
+
+            // Disable key button
+            const btn = document.getElementById(`key-btn-${keyIndex}`);
+            if (btn) btn.disabled = true;
+
+            updateAnswerSlotsDisplay();
+        }
+
+        function deleteLastLetter() {
+            if (isQuestionChecked) return;
+            if (userSelectedLetters.length === 0) return;
+
+            // Remove last chosen letter
+            const removed = userSelectedLetters.pop();
+
+            // Re-enable original key button
+            const btn = document.getElementById(`key-btn-${removed.keyIndex}`);
+            if (btn) btn.disabled = false;
+
+            updateAnswerSlotsDisplay();
+            
+            // Hide potential warning feedback
+            const feedbackBox = document.getElementById('feedbackBox');
+            if (feedbackBox.classList.contains('warning')) {
+                feedbackBox.style.visibility = 'hidden';
+            }
+        }
+
+        function updateAnswerSlotsDisplay() {
+            const currentQ = QUESTIONS_DATA[currentQuestionIndex];
+            const slots = document.querySelectorAll('#answerSlots .slot:not(.space)');
+            
+            slots.forEach((slot, idx) => {
+                if (idx < userSelectedLetters.length) {
+                    slot.innerText = userSelectedLetters[idx].char;
+                    slot.classList.add('filled');
+                } else {
+                    slot.innerText = '';
+                    slot.classList.remove('filled');
+                }
+            });
+        }
+
+        function checkAnswer() {
+            if (isQuestionChecked) return;
+
+            const reqCount = getRequiredLetterCount();
+            const feedbackBox = document.getElementById('feedbackBox');
+
+            // 1. Validation: Check if full answer entered
+            if (userSelectedLetters.length < reqCount) {
+                feedbackBox.innerHTML = '⚠️ Hãy chọn đủ chữ trước khi kiểm tra!';
+                feedbackBox.className = 'feedback-box warning';
+                feedbackBox.style.visibility = 'visible';
+                return;
+            }
+
+            isQuestionChecked = true;
+
+            // Format User Input
+            const userString = userSelectedLetters.map(item => item.char).join('').toUpperCase();
+            const correctString = QUESTIONS_DATA[currentQuestionIndex].answer.replace(/\s+/g, '').toUpperCase();
+
+            // Compare Answer
+            if (userString === correctString) {
+                // CORRECT
+                score = Math.min(50, score + 2.5); // Cap score at max 50
+                correctCount++;
+                feedbackBox.innerHTML = '🎉 Chính xác! Bạn nhận được +2,5 điểm.';
+                feedbackBox.className = 'feedback-box correct';
+            } else {
+                // WRONG
+                score = score - 2.5;
+                wrongCount++;
+                const actualAnswer = QUESTIONS_DATA[currentQuestionIndex].answer;
+                feedbackBox.innerHTML = `❌ Chưa chính xác! Đáp án đúng: <strong>${actualAnswer}</strong>`;
+                feedbackBox.className = 'feedback-box wrong';
+            }
+
+            feedbackBox.style.visibility = 'visible';
+
+            // Lock controls for current question
+            document.getElementById('btnCheck').disabled = true;
+            document.getElementById('btnDelete').disabled = true;
+            disableAllKeyboardKeys();
+
+            // Update Header Status Display
+            document.getElementById('scoreText').innerText = `Điểm: ${score} / 50`;
+
+            // Display Next Button
+            const btnNext = document.getElementById('btnNext');
+            if (currentQuestionIndex === QUESTIONS_DATA.length - 1) {
+                btnNext.innerHTML = 'XEM KẾT QUẢ <i class="fa-solid fa-trophy"></i>';
+            } else {
+                btnNext.innerHTML = 'CÂU TIẾP THEO <i class="fa-solid fa-arrow-right"></i>';
+            }
+            btnNext.style.display = 'flex';
+        }
+
+        function disableAllKeyboardKeys() {
+            const keys = document.querySelectorAll('.key-btn');
+            keys.forEach(k => k.disabled = true);
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < QUESTIONS_DATA.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            showScreen('resultScreen');
+
+            // Display Score Stats
+            document.getElementById('finalScoreText').innerText = `${score} / 50 điểm`;
+            document.getElementById('statCorrectText').innerHTML = `✅ Đúng: <strong>${correctCount}</strong> câu`;
+            document.getElementById('statWrongText').innerHTML = `❌ Sai: <strong>${wrongCount}</strong> câu`;
+
+            // Evaluation Message based on score ranges
+            const evalBox = document.getElementById('evalText');
+            if (score >= 45) {
+                evalBox.innerText = "🌟 Xuất sắc! Bạn là nhà khám phá đại dương tài ba!";
+            } else if (score >= 30) {
+                evalBox.innerText = "🐬 Rất tốt! Bạn đã khám phá được rất nhiều điều thú vị!";
+            } else if (score >= 15) {
+                evalBox.innerText = "🐠 Khá tốt! Hãy thử lại để đạt điểm cao hơn nhé!";
+            } else {
+                evalBox.innerText = "⚓ Hãy cố gắng hơn ở lượt chơi sau nhé! Đại dương vẫn đang chờ bạn!";
+            }
+        }
+
+        // Initialize Bubbles on Load
+        window.onload = function() {
+            createBubbles();
+        };
+    </script>
+</body>
+</html>
